@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cl.dao.WeixiuxinxiDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.cl.entity.WeixiuxinxiEntity" id="weixiuxinxiMap">
+        <result property="chepaihao" column="chepaihao"/>
+        <result property="chexing" column="chexing"/>
+        <result property="cheliangpinpai" column="cheliangpinpai"/>
+        <result property="cheliangxinghao" column="cheliangxinghao"/>
+        <result property="yonghuzhanghao" column="yonghuzhanghao"/>
+        <result property="yonghuxingming" column="yonghuxingming"/>
+        <result property="baoxiubiaoti" column="baoxiubiaoti"/>
+        <result property="weixiuzhanghao" column="weixiuzhanghao"/>
+        <result property="weixiuxingming" column="weixiuxingming"/>
+        <result property="ispay" column="ispay"/>
+        <result property="guzhangweizhi" column="guzhangweizhi"/>
+        <result property="guzhangyuanyin" column="guzhangyuanyin"/>
+        <result property="weixiufeiyong" column="weixiufeiyong"/>
+        <result property="weixiuneirong" column="weixiuneirong"/>
+        <result property="jianchabaogao" column="jianchabaogao"/>
+        <result property="jianyixinxi" column="jianyixinxi"/>
+        <result property="weixiushijian" column="weixiushijian"/>
+        <result property="weixiucishu" column="weixiucishu"/>
+    </resultMap>
+
+    <select id="selectListView"
+            resultType="com.cl.entity.view.WeixiuxinxiView">
+
+        SELECT weixiuxinxi.* FROM weixiuxinxi weixiuxinxi
+        <where>1=1 ${ew.sqlSegment}</where>
+    </select>
+
+    <select id="selectView"
+            resultType="com.cl.entity.view.WeixiuxinxiView">
+        SELECT * FROM weixiuxinxi weixiuxinxi
+        <where>1=1 ${ew.sqlSegment}</where>
+    </select>
+
+
+    <select id="selectValue" resultType="map">
+        SELECT ${params.xColumn}, ROUND(sum(${params.yColumn}),1) total FROM weixiuxinxi
+        <where>1=1 ${ew.sqlSegment}</where>
+        group by ${params.xColumn}
+        limit 10
+    </select>
+
+    <select id="selectTimeStatValue" resultType="map">
+        <if test='params.timeStatType == "日"'>
+            SELECT DATE_FORMAT(${params.xColumn},'%Y-%m-%d') ${params.xColumn}, sum(${params.yColumn}) total FROM
+            weixiuxinxi
+            <where>1=1 ${ew.sqlSegment}</where>
+            group by DATE_FORMAT(${params.xColumn},'%Y-%m-%d')
+        </if>
+        <if test='params.timeStatType == "月"'>
+            SELECT DATE_FORMAT(${params.xColumn},'%Y-%m') ${params.xColumn}, sum(${params.yColumn}) total FROM
+            weixiuxinxi
+            <where>1=1 ${ew.sqlSegment}</where>
+            group by DATE_FORMAT(${params.xColumn},'%Y-%m')
+        </if>
+        <if test='params.timeStatType == "年"'>
+            SELECT DATE_FORMAT(${params.xColumn},'%Y') ${params.xColumn}, sum(${params.yColumn}) total FROM weixiuxinxi
+            <where>1=1 ${ew.sqlSegment}</where>
+            group by DATE_FORMAT(${params.xColumn},'%Y')
+        </if>
+    </select>
+
+    <select id="selectGroup" resultType="map">
+        SELECT ${params.column} , count(1) total FROM weixiuxinxi
+        <where>1=1 ${ew.sqlSegment}</where>
+        group by ${params.column}
+        limit 10
+    </select>
+
+
+</mapper>

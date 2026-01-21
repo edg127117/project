@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cl.dao.GuzhangleixingDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.cl.entity.GuzhangleixingEntity" id="guzhangleixingMap">
+        <result property="guzhangleixing" column="guzhangleixing"/>
+    </resultMap>
+
+    <select id="selectListView"
+            resultType="com.cl.entity.view.GuzhangleixingView">
+
+        SELECT guzhangleixing.* FROM guzhangleixing guzhangleixing
+        <where>1=1 ${ew.sqlSegment}</where>
+    </select>
+
+    <select id="selectView"
+            resultType="com.cl.entity.view.GuzhangleixingView">
+        SELECT * FROM guzhangleixing guzhangleixing
+        <where>1=1 ${ew.sqlSegment}</where>
+    </select>
+
+
+</mapper>
