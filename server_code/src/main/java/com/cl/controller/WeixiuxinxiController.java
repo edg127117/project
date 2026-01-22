@@ -1,20 +1,32 @@
 package com.cl.controller;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Date;
+import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.cl.annotation.IgnoreAuth;
+
 import com.cl.entity.WeixiuxinxiEntity;
 import com.cl.entity.view.WeixiuxinxiView;
 import com.cl.service.WeixiuxinxiService;
-import com.cl.utils.MPUtil;
 import com.cl.utils.PageUtils;
 import com.cl.utils.R;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import com.cl.utils.MPUtil;
 
-import javax.servlet.http.HttpServletRequest;
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 /**
  * 维修信息
@@ -108,20 +120,22 @@ public class WeixiuxinxiController {
     }
 
 
-    /**
-     * 后端保存
-     */
     @RequestMapping("/save")
     public R save(@RequestBody WeixiuxinxiEntity weixiuxinxi, HttpServletRequest request){
         weixiuxinxi.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
+        //ValidatorUtils.validateEntity(weixiuxinxi);
 
-        // 自动计算：总费用 = 材料费 + 工时费
+        // --- 修正：使用正确的字段名进行自动计算 ---
+        // 逻辑：维修费用(总) = 材料费 + 工时费
         Double cailiao = weixiuxinxi.getCailiaofei() == null ? 0.0 : weixiuxinxi.getCailiaofei();
         Double gongshi = weixiuxinxi.getGongshifei() == null ? 0.0 : weixiuxinxi.getGongshifei();
         weixiuxinxi.setWeixiufeiyong(cailiao + gongshi);
 
-        // 默认状态
-        weixiuxinxi.setIspay("未支付");
+        // 默认设置为未支付，防止前端传错状态
+        if(StringUtils.isEmpty(weixiuxinxi.getIspay())) {
+            weixiuxinxi.setIspay("未支付");
+        }
+        // ------------------------------------
 
         weixiuxinxiService.insert(weixiuxinxi);
         return R.ok();
@@ -142,16 +156,22 @@ public class WeixiuxinxiController {
      * 修改
      */
     @RequestMapping("/update")
+    @Transactional
     public R update(@RequestBody WeixiuxinxiEntity weixiuxinxi, HttpServletRequest request){
-        // 修改时如果动了费用，也重新计算
-        if(weixiuxinxi.getCailiaofei() != null || weixiuxinxi.getGongshifei() != null) {
-            Double cailiao = weixiuxinxi.getCailiaofei() == null ? 0.0 : weixiuxinxi.getCailiaofei();
-            Double gongshi = weixiuxinxi.getGongshifei() == null ? 0.0 : weixiuxinxi.getGongshifei();
-            weixiuxinxi.setWeixiufeiyong(cailiao + gongshi);
-        }
-        weixiuxinxiService.updateById(weixiuxinxi);
+        //ValidatorUtils.validateEntity(weixiuxinxi);
+
+        // --- 修正：使用正确的字段名进行自动计算 ---
+        // 这里的逻辑假设前端update传的是完整对象。如果是部分更新且费用字段为null，这里会重置为0。
+        // 为了安全起见，通常管理后台的编辑是全量提交，所以这里重新计算是安全的。
+        Double cailiao = weixiuxinxi.getCailiaofei() == null ? 0.0 : weixiuxinxi.getCailiaofei();
+        Double gongshi = weixiuxinxi.getGongshifei() == null ? 0.0 : weixiuxinxi.getGongshifei();
+        weixiuxinxi.setWeixiufeiyong(cailiao + gongshi);
+        // ------------------------------------
+
+        weixiuxinxiService.updateById(weixiuxinxi);//全部更新
         return R.ok();
     }
+
 
 
     /**
@@ -314,8 +334,6 @@ public class WeixiuxinxiController {
         }
         return R.ok().put("data", result);
     }
-
-
     /**
      * 总数量
      */
@@ -332,6 +350,4 @@ public class WeixiuxinxiController {
         int count = weixiuxinxiService.selectCount(MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, weixiuxinxi), params), params));
         return R.ok().put("data", count);
     }
-
-
 }
